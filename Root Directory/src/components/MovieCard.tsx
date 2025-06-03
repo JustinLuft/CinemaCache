@@ -1,4 +1,3 @@
-import React from 'react';
 import { Star, Film, Clapperboard } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';

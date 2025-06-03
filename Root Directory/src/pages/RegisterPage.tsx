@@ -3,20 +3,27 @@ import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Ticket, LogIn, Clapperboard } from "lucide-react";
+import { Ticket, Clapperboard, UserPlus } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/firebase/firebase";  // Adjust the path to your firebase config file
+// Firebase imports
+import { auth, db } from '@/firebase/firebase';
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
 
-const LoginPage = () => {
+const SignUpPage = () => {
   const navigate = useNavigate();
   const [isTicketAdmitted, setIsTicketAdmitted] = useState(false);
+  const [name, setName] = useState('');  // New name state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
+  const [confirmPassword, setConfirmPassword] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
   const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  // Cursor position for light effect
+  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -40,32 +47,44 @@ const LoginPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     setMessage(null);
 
+    if (!name.trim()) {
+      setMessage({ type: 'error', text: "Please enter your name." });
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setMessage({ type: 'error', text: "Passwords don't match." });
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      setMessage({
-        type: 'success',
-        text: 'Welcome to CinemaPrompt! Your ticket has been validated.'
+      // Create user in Firebase Authentication
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Save extra user info (name) in Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        name: name.trim(),
+        email: user.email,
+        createdAt: new Date(),
       });
+
+      setMessage({ type: 'success', text: 'Registration successful! Redirecting to login...' });
       setIsTicketAdmitted(true);
 
       setTimeout(() => {
-        navigate('/dashboard');
+        navigate('/login');
       }, 1500);
 
     } catch (error: any) {
-      let errorMsg = 'Invalid Ticket. Please check your credentials.';
-      if (error.code === 'auth/user-not-found') {
-        errorMsg = 'No user found with this email.';
-      } else if (error.code === 'auth/wrong-password') {
-        errorMsg = 'Incorrect password.';
-      } else if (error.code === 'auth/too-many-requests') {
-        errorMsg = 'Too many failed attempts. Please try again later.';
-      }
-      setMessage({ type: 'error', text: errorMsg });
+      setMessage({ type: 'error', text: error.message || "Failed to register user." });
     }
+
+    setLoading(false);
   };
 
   return (
@@ -106,38 +125,45 @@ const LoginPage = () => {
           rotateY: isTicketAdmitted ? 90 : 0,
           scale: isTicketAdmitted ? 1.2 : 1,
           opacity: isTicketAdmitted ? 0 : 1,
-          transition: {
-            duration: 1,
-            ease: 'easeInOut'
-          }
+          transition: { duration: 1, ease: 'easeInOut' }
         }}
       >
-        {/* Ticket Header */}
         <div className="bg-primary text-primary-foreground p-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Clapperboard className="w-8 h-8 text-primary-foreground" />
             <h2 className="text-2xl font-bold tracking-widest uppercase">CinemaPrompt</h2>
           </div>
           <div className="text-right">
-            <p className="text-sm">ADMIT ONE</p>
+            <p className="text-sm">REGISTER</p>
             <Ticket className="w-12 h-12 text-primary-foreground" />
           </div>
         </div>
 
-        {/* Ticket Body */}
         <form onSubmit={handleSubmit} className="p-8 space-y-6 relative">
           <div className="space-y-4 relative z-10">
             <div className="text-center mb-6">
-              <h3 className="text-3xl font-bold text-primary tracking-widest">LOGIN TICKET</h3>
-              <p className="text-sm text-primary/70">Personal Access Pass</p>
+              <h3 className="text-3xl font-bold text-primary tracking-widest">SIGN UP TICKET</h3>
+              <p className="text-sm text-primary/70">Create your personal access pass</p>
             </div>
 
-            {/* Email Section */}
+            {/* Name Input */}
             <div className="space-y-2">
-              <Label
-                htmlFor="email"
-                className="text-sm font-medium text-primary uppercase tracking-wider"
-              >
+              <Label htmlFor="name" className="text-sm font-medium text-primary uppercase tracking-wider">
+                Full Name
+              </Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="Your Full Name"
+                className="border-primary/50 focus:ring-primary bg-input font-mono text-foreground tracking-wider"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-sm font-medium text-primary uppercase tracking-wider">
                 Email Address
               </Label>
               <Input
@@ -151,12 +177,8 @@ const LoginPage = () => {
               />
             </div>
 
-            {/* Password Section */}
             <div className="space-y-2">
-              <Label
-                htmlFor="password"
-                className="text-sm font-medium text-primary uppercase tracking-wider"
-              >
+              <Label htmlFor="password" className="text-sm font-medium text-primary uppercase tracking-wider">
                 Secret Passcode
               </Label>
               <Input
@@ -169,9 +191,23 @@ const LoginPage = () => {
                 required
               />
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword" className="text-sm font-medium text-primary uppercase tracking-wider">
+                Confirm Passcode
+              </Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="Confirm your secret passcode"
+                className="border-primary/50 focus:ring-primary bg-input font-mono text-foreground tracking-wider"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+              />
+            </div>
           </div>
 
-          {/* Message display */}
           {message && (
             <p
               className={`text-center text-sm font-medium ${
@@ -182,43 +218,30 @@ const LoginPage = () => {
             </p>
           )}
 
-          {/* Login Button */}
           <Button
             type="submit"
+            disabled={loading}
             className="w-full bg-primary hover:bg-primary-hover text-primary-foreground flex items-center justify-center gap-2 tracking-wider uppercase"
           >
-            <LogIn className="w-4 h-4" />
-            Validate Ticket
+            <UserPlus className="w-4 h-4" />
+            {loading ? 'Registering...' : 'Create Ticket'}
           </Button>
         </form>
 
-        {/* Ticket Footer */}
         <div className="p-4 text-center text-sm bg-card">
-          <div className="flex justify-between items-center">
-            <div className="text-left">
-              <p className="text-muted-foreground text-xs uppercase tracking-wider">Date Issued</p>
-              <p className="font-mono text-foreground">{new Date().toLocaleDateString()}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-muted-foreground text-xs uppercase tracking-wider">Seat</p>
-              <p className="font-mono text-foreground">C-PROMPT</p>
-            </div>
-          </div>
-
           <div className="mt-4">
-            No ticket?{' '}
+            Already have a ticket?{' '}
             <Button
               variant="link"
               type="button"
               className="text-primary ml-1 underline"
-              onClick={() => navigate('/register')}
+              onClick={() => navigate('/login')}
             >
-              Get Yours Here
+              Log In Here
             </Button>
           </div>
         </div>
 
-        {/* Ticket Serial Number */}
         <div className="absolute bottom-2 right-4 text-muted-foreground text-xs font-mono">
           TICKET #: {Math.floor(Math.random() * 1000000)}
         </div>
@@ -227,4 +250,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default SignUpPage;

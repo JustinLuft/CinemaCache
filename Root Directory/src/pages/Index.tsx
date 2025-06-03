@@ -78,11 +78,11 @@ const Index = () => {
           </div>
           
           <h1 className="text-4xl md:text-6xl font-serif text-foreground leading-tight">
-            Welcome to <span className="text-accent">CinemaPrompt</span>
+            Welcome to <span className="text-accent">CinemaCache</span>
           </h1>
           
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Your personal AI-powered movie companion. Generate creative prompts and manage your film collection.
+            Your personal movie companion. Generate creative prompts and manage your film collection.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
@@ -95,15 +95,7 @@ const Index = () => {
               Get Started
             </Button>
             
-            <Button 
-              onClick={() => navigate('/about')}
-              variant="secondary"
-              size="lg"
-              className="bg-secondary hover:bg-secondary/80"
-            >
-              <Clapperboard className="mr-2 h-5 w-5" />
-              Learn More
-            </Button>
+            
           </div>
         </div>
       </section>
