@@ -1,0 +1,100 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+ 
+@layer base {
+  :root {
+    --background: 0 0% 7%;
+    --foreground: 0 0% 96%;
+    
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 96%;
+ 
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 96%;
+ 
+    --primary: 0 75% 50%;
+    --primary-foreground: 0 0% 96%;
+ 
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 96%;
+
+    --accent: 45 100% 51%;
+    --accent-foreground: 0 0% 7%;
+ 
+    --muted: 0 0% 16%;
+    --muted-foreground: 0 0% 63%;
+ 
+    --destructive: 0 74% 50%;
+    --destructive-foreground: 0 0% 96%;
+
+    --border: 0 0% 16%;
+    --input: 0 0% 12%;
+    --ring: 45 100% 51%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif;
+  }
+}
+
+@layer utilities {
+  /* Custom utility for film grain texture */
+  .film-grain {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.05;
+    pointer-events: none;
+  }
+
+  /* Custom glow effect for buttons */
+  .glow-hover {
+    @apply transition-all duration-300;
+  }
+  
+  .glow-hover:hover {
+    box-shadow: 0 0 15px theme('colors.accent.DEFAULT');
+  }
+
+  /* Custom animation for card hover effect */
+  .card-flip {
+    @apply transition-transform duration-300;
+  }
+  
+  .card-flip:hover {
+    transform: perspective(1000px) rotateY(5deg) translateY(-5px);
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-background;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-muted rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground;
+}
+
+/* Selection styling */
+::selection {
+  @apply bg-primary/30 text-foreground;
+}
