@@ -1,4 +1,4 @@
 export { default as LoginPage } from './LoginPage';
-export { default as SkillsPage } from './SkillsPage';
-export { default as AboutPage } from './AboutPage';
-export { default as ProjectShowcasePage } from './ProjectShowcasePage';
+export { default as Dashboard } from './Dashboard';
+export { default as Index } from './Index';
+export { default as NotFound } from './NotFound';
