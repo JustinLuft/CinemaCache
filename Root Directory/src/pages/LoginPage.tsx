@@ -17,6 +17,7 @@ const LoginPage = () => {
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
+  const ticketNumber = useRef(Math.floor(Math.random() * 1000000));
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -112,6 +113,9 @@ const LoginPage = () => {
           }
         }}
       >
+        {/* Film Grain Texture Overlay */}
+        <div className="absolute inset-0 film-grain pointer-events-none rounded-lg z-20" />
+        <div className="absolute inset-0 film-grain pointer-events-none rounded-lg z-20" />
         {/* Ticket Header */}
         <div className="bg-primary text-primary-foreground p-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
@@ -220,7 +224,7 @@ const LoginPage = () => {
 
         {/* Ticket Serial Number */}
         <div className="absolute bottom-2 right-4 text-muted-foreground text-xs font-mono">
-          TICKET #: {Math.floor(Math.random() * 1000000)}
+          TICKET #: {ticketNumber.current}
         </div>
       </motion.div>
     </div>

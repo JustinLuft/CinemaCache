@@ -21,6 +21,7 @@ const SignUpPage = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
   const [loading, setLoading] = useState(false);
+  const ticketNumber = useRef(Math.floor(Math.random() * 1000000));
 
   // Cursor position for light effect
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
@@ -115,6 +116,7 @@ const SignUpPage = () => {
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[200vh] h-[50vh] rounded-full bg-primary/5 blur-[100px]" />
 
       {/* Vintage Ticket Container */}
+      
       <motion.div
         className="w-[600px] bg-card shadow-2xl border-4 border-primary relative z-10"
         style={{
@@ -129,6 +131,8 @@ const SignUpPage = () => {
         }}
       >
         <div className="bg-primary text-primary-foreground p-4 flex items-center justify-between">
+          <div className="absolute inset-0 film-grain pointer-events-none rounded-lg z-20" />
+        <div className="absolute inset-0 film-grain pointer-events-none rounded-lg z-20" />
           <div className="flex items-center space-x-2">
             <Clapperboard className="w-8 h-8 text-primary-foreground" />
             <h2 className="text-2xl font-bold tracking-widest uppercase">CinemaPrompt</h2>
@@ -243,7 +247,7 @@ const SignUpPage = () => {
         </div>
 
         <div className="absolute bottom-2 right-4 text-muted-foreground text-xs font-mono">
-          TICKET #: {Math.floor(Math.random() * 1000000)}
+          TICKET #: {ticketNumber.current}
         </div>
       </motion.div>
     </div>

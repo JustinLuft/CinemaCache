@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Film, Popcorn, Clapperboard, Plus, Filter, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -68,6 +68,10 @@ const Dashboard = () => {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [filter, setFilter] = useState<string>("all");
+  const [sortOrder, setSortOrder] = useState<"recent" | "oldest">("recent");
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
 
   // Fetch user name once when auth is ready
   useEffect(() => {
@@ -213,14 +217,17 @@ const Dashboard = () => {
       if (filter === "all") return true;
       if (filter === "watched") return movie.type === "watched";
       if (filter === "watchlist") return movie.type === "watchlist";
-      if (filter === "favorites") return movie.favorite; // <-- Add this line
-
-      // filter by year
+      if (filter === "favorites") return movie.favorite;
       const movieYear = new Date(movie.watchedDate).getFullYear().toString();
       return movieYear === filter;
     })
-    // Sort so favorites come first
+    // Sort by watchedDate based on sortOrder
     .sort((a, b) => {
+      const dateA = new Date(a.watchedDate).getTime();
+      const dateB = new Date(b.watchedDate).getTime();
+      if (sortOrder === "recent") return dateB - dateA;
+      if (sortOrder === "oldest") return dateA - dateB;
+      // fallback: favorites first
       if (a.favorite === b.favorite) return 0;
       if (a.favorite) return -1;
       return 1;
@@ -233,10 +240,53 @@ const Dashboard = () => {
     .sort()
     .reverse();
 
-  return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="fixed inset-0 film-grain" aria-hidden="true" />
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      // Get bounding rect of the container
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        setCursorPosition({
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top,
+        });
+      }
+    };
 
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, []);
+
+  return (
+    <div
+      ref={containerRef}
+      className="min-h-screen flex items-start justify-center bg-background relative overflow-hidden"
+    >
+      {/* Cursor Light Effect */}
+      <div
+        className="absolute pointer-events-none z-0 transition-all duration-200 ease-out"
+        style={{
+          left: cursorPosition.x,
+          top: cursorPosition.y,
+          transform: "translate(-50%, -50%)",
+          width: "300px",
+          height: "300px",
+          background:
+            "radial-gradient(circle, rgba(211,47,47,0.2) 0%, rgba(211,47,47,0) 70%)",
+          borderRadius: "50%",
+          opacity: 0.5,
+          filter: "blur(100px)",
+        }}
+      />
+
+      {/* Film Grain Background Effect */}
+      <div className="fixed inset-0 film-grain pointer-events-none z-0" />
+
+      {/* Ambient Lighting Effect */}
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[200vh] h-[50vh] rounded-full bg-primary/5 blur-[100px]" />
+
+      {/* Main Content */}
       <main className="container mx-auto relative z-10">
         <div className="mb-8">
           <h1 className="text-4xl font-serif text-foreground mb-2">
@@ -245,7 +295,7 @@ const Dashboard = () => {
               : `Welcome to Your Cinema${userName ? `, ${userName}` : ""}`}
           </h1>
           <p className="text-muted-foreground">
-            Manage your movie collection and generate creative prompts
+            Manage your movie collection and generate reccomendation prompts
           </p>
         </div>
 
@@ -301,12 +351,27 @@ const Dashboard = () => {
                     <SelectItem value="all">All Movies</SelectItem>
                     <SelectItem value="watched">Watched</SelectItem>
                     <SelectItem value="watchlist">Watchlist</SelectItem>
-                    <SelectItem value="favorites">Favorites</SelectItem> 
+                    <SelectItem value="favorites">Favorites</SelectItem>
                     {availableYears.map((year) => (
                       <SelectItem key={year} value={year}>
                         {year}
                       </SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+                {/* Sort Order Select */}
+                <Select
+                  value={sortOrder}
+                  onValueChange={(value) =>
+                    setSortOrder(value as "recent" | "oldest")
+                  }
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Sort By" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="recent">Newest</SelectItem>
+                    <SelectItem value="oldest">Oldest</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -396,7 +461,7 @@ const Dashboard = () => {
           </TabsContent>
 
           <TabsContent value="prompts">
-            <div className="bg-card rounded-lg border border-border p-6">
+            <div className="bg-card rounded-lg border border-border p-6 h-[600px]">
               <PromptGenerator />
             </div>
           </TabsContent>

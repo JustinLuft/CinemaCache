@@ -15,6 +15,7 @@ interface Movie {
   image?: string;
   type?: 'watched' | 'watchlist';
   watchedDate?: string;
+  favorite?: boolean; // <-- Add this line
 }
 
 const PromptGenerator: React.FC = () => {
@@ -23,6 +24,8 @@ const PromptGenerator: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loadingMovies, setLoadingMovies] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
 
   const db = getFirestore(app);
   const auth = getAuth(app);
@@ -73,6 +76,7 @@ const PromptGenerator: React.FC = () => {
             image: data.image ?? "",
             type: data.type ?? "watched",
             watchedDate: data.watchedDate ?? "",
+            favorite: data.favorite ?? false, // <-- Add this line
           });
         });
 
@@ -89,6 +93,7 @@ const PromptGenerator: React.FC = () => {
   }, [auth, db]);
 
   const handleGenerate = () => {
+
     if (movies.length === 0) {
       toast({
         title: "No Movies Found",
@@ -98,17 +103,17 @@ const PromptGenerator: React.FC = () => {
     }
 
     if (!genre.trim()) {
-      toast({
-        title: "Genre Required",
-        description: "Please enter a genre for recommendations.",
-      });
+      setErrorMessage("Please enter a genre for recommendations.");
       return;
     }
 
+    setErrorMessage(null);
     setIsGenerating(true);
 
     const moviesList = movies
-      .map((m) => `- "${m.title}" (rated ${m.rating}/10)`)
+      .map((m) =>
+        `- "${m.title}" (rated ${m.rating}/10${m.favorite ? ", FAVORITED" : ""})`
+      )
       .join("\n");
 
     const generatedPrompt = `I want you to recommend some movies for me to watch. Here is the list of movies I have already seen along with my ratings:\n${moviesList}\n\nPlease recommend movies in the "${genre.trim()}" genre that I haven't seen yet, preferably highly rated and similar in style or theme to the movies listed.`;
@@ -130,70 +135,79 @@ const PromptGenerator: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-6 space-y-6">
-      <Card className="p-6 bg-card border border-border/50 shadow-lg">
-        <div className="flex items-center gap-3 mb-6">
-          <Clapperboard className="w-8 h-8 text-accent" />
-          <h2 className="text-2xl font-serif text-foreground">Prompt Generator</h2>
-        </div>
-
-        {loadingMovies ? (
-          <p className="text-center text-muted-foreground">Loading your movies...</p>
-        ) : (
-          <>
-            <div className="mb-4">
-              <label className="block text-sm text-muted-foreground mb-1" htmlFor="genre-input">
-                Desired Genre for Recommendations
-              </label>
-              <input
-                id="genre-input"
-                type="text"
-                placeholder="e.g. sci-fi, thriller, comedy"
-                value={genre}
-                onChange={(e) => setGenre(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg bg-neutral-800 text-white border border-border focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-            </div>
-
-            <Textarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Your generated prompt will appear here..."
-              className="min-h-[200px] bg-input border-border/50 font-mono text-sm resize-none focus:ring-accent"
-            />
-
-            <div className="flex gap-4 mt-4">
-              <Button
-                onClick={handleGenerate}
-                className="flex-1 bg-primary hover:bg-primary-hover text-primary-foreground"
-                disabled={isGenerating}
-              >
-                <Wand2 className="w-4 h-4 mr-2" />
-                {isGenerating ? "Generating..." : "Generate Prompt"}
-              </Button>
-
-              <Button
-                onClick={handleCopy}
-                variant="secondary"
-                className="bg-secondary hover:bg-secondary/80"
-                disabled={!prompt}
-              >
-                <Copy className="w-4 h-4 mr-2" />
-                Copy
-              </Button>
-            </div>
-          </>
-        )}
-      </Card>
-
-      <div className="relative">
+    <div className="w-full max-w-6xl mx-auto p-6 space-y-6">
+      <Card className="p-6 bg-card border border-border/50 shadow-lg relative overflow-hidden min-h-[500px]">
+        {/* Cinema Curtain Background */}
         <img
           src="https://images.unsplash.com/photo-1508778552286-12d4c6007799"
           alt="Cinema Background"
-          className="w-full h-48 object-cover rounded-lg opacity-20"
+          className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none z-0"
+          style={{ objectPosition: "center" }}
         />
-        <div className="absolute inset-0 film-grain rounded-lg"></div>
-      </div>
+        <div className="absolute inset-0 film-grain rounded-lg z-0 pointer-events-none" />
+
+        {/* Card Content */}
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-6">
+            <Clapperboard className="w-8 h-8 text-accent" />
+            <h2 className="text-2xl font-serif text-foreground">Prompt Generator</h2>
+          </div>
+
+          {loadingMovies ? (
+            <p className="text-center text-muted-foreground">Loading your movies...</p>
+          ) : (
+            <>
+              <div className="mb-4">
+                <label className="block text-sm text-muted-foreground mb-1" htmlFor="genre-input">
+                  Desired Genre for Recommendations
+                </label>
+                <input
+                  id="genre-input"
+                  type="text"
+                  placeholder="e.g. sci-fi, thriller, comedy"
+                  value={genre}
+                  onChange={(e) => setGenre(e.target.value)}
+                  className={`w-full px-4 py-2 rounded-lg bg-neutral-800 text-white border focus:outline-none focus:ring-2 ${
+                    errorMessage ? "border-red-500 focus:ring-red-500" : "border-border focus:ring-primary"
+                  }`}
+                />
+                {errorMessage && (
+                  <p className="mt-1 text-sm text-red-500 font-medium">{errorMessage}</p>
+                )}
+              </div>
+
+
+              <Textarea
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="Your generated prompt will appear here..."
+                className="min-h-[270px] bg-input border-border/50 font-mono text-sm resize-none focus:ring-accent"
+              />
+
+              <div className="flex gap-4 mt-4">
+                <Button
+                  onClick={handleGenerate}
+                  className="flex-1 w-full bg-primary hover:bg-primary-hover text-primary-foreground"
+                  disabled={isGenerating}
+                >
+                  <Wand2 className="w-4 h-4 mr-2" />
+                  {isGenerating ? "Generating..." : "Generate Prompt"}
+                </Button>
+
+                <Button
+                  onClick={handleCopy}
+                  variant="secondary"
+                  className="bg-secondary hover:bg-secondary/80"
+                  disabled={!prompt}
+                >
+                  <Copy className="w-4 h-4 mr-2" />
+                  Copy
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
+      </Card>
     </div>
   );
 };
