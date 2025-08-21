@@ -2,8 +2,6 @@
 
 A modern, responsive movie discovery application that lets users explore the world of cinema with ease.
 
-![CinemaCache Demo](https://via.placeholder.com/800x400/1a1a1a/ffffff?text=CinemaCache+Screenshot)
-
 ## 🌟 Overview
 
 CinemaCache is a sleek movie browsing application designed for film enthusiasts who want to stay current with trending movies and discover new favorites. Built with performance and user experience as top priorities, it delivers a fast, intuitive interface that works seamlessly across all devices.
@@ -168,7 +166,6 @@ We welcome contributions! Here's how you can help:
 
 ### Current Limitations
 - Search limited to movie titles only
-- No user authentication/favorites system
 - Limited to English language content
 
 ### Upcoming Features
@@ -179,25 +176,15 @@ We welcome contributions! Here's how you can help:
 - [ ] Offline functionality
 - [ ] Movie trailers integration
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ## 🙏 Acknowledgments
 
 - [The Movie Database (TMDB)](https://www.themoviedb.org/) for providing the movie data API
 - [Tailwind CSS](https://tailwindcss.com/) for the excellent utility-first CSS framework
 - [React](https://reactjs.org/) community for the amazing ecosystem
 
-## 📧 Contact
-
-**Your Name** - [@yourusername](https://twitter.com/yourusername) - your.email@example.com
-
-Project Link: [https://github.com/yourusername/CinemaCache](https://github.com/yourusername/CinemaCache)
-
 ---
 
 <div align="center">
-  <p>Made by Justin Luft</p>
+  <p>Made by Justin </p>
   <p>⭐ Star this repo if you find it useful!</p>
 </div>
