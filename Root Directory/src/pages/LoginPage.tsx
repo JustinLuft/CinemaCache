@@ -48,7 +48,7 @@ const LoginPage = () => {
       await signInWithEmailAndPassword(auth, email, password);
       setMessage({
         type: 'success',
-        text: 'Welcome to CinemaPrompt! Your ticket has been validated.'
+        text: 'Welcome to CinemaCache! Your ticket has been validated.'
       });
       setIsTicketAdmitted(true);
 
@@ -120,7 +120,7 @@ const LoginPage = () => {
         <div className="bg-primary text-primary-foreground p-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Clapperboard className="w-8 h-8 text-primary-foreground" />
-            <h2 className="text-2xl font-bold tracking-widest uppercase">CinemaPrompt</h2>
+            <h2 className="text-2xl font-bold tracking-widest uppercase">CinemaCache</h2>
           </div>
           <div className="text-right">
             <p className="text-sm">ADMIT ONE</p>
