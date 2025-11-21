@@ -27,7 +27,7 @@ const Header = () => {
               to="/generator" 
               className="text-foreground hover:text-accent transition-colors font-medium"
             >
-              Prompt Generator
+              AI Recommendation Generator
             </Link>
 
             {/* Logout Button */}

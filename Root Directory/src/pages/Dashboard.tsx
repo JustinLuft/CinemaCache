@@ -326,7 +326,7 @@ const Dashboard = () => {
               className="flex items-center px-4 py-2 rounded-md text-sm font-medium text-white bg-[#2a2a2a] data-[state=active]:bg-[#d32f2f] data-[state=inactive]:text-neutral-400 transition-colors"
             >
               <Popcorn className="mr-2 h-4 w-4" />
-              Prompt Generator
+                AI Recommendation Generator
             </TabsTrigger>
           </TabsList>
           <div className="flex gap-4 mb-8">
